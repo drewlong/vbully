@@ -1,0 +1,36 @@
+#!/usr/bin/env ruby
+
+require 'gibberish'
+
+def trykeys(hash)
+  hash = hash.split(":", 2)
+  user = hash.first
+  phash = hash.last.split(":", 2).first
+  salt = hash.last.split(":", 2).last.strip 
+  wlist = File.open(ARGV[1]).read
+  wlist = wlist.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
+  f = 0
+  wlist.each_line do |w|
+      next if f == 1
+      pass = w.strip
+      x = Gibberish::MD5(pass)
+      y = Gibberish::MD5("#{x}#{salt}")
+      if y == phash
+        entry = "#{user}:#{pass}"
+        File.open(ARGV[1], "a"){|f| f.puts entry}
+	f = 1
+      else
+        puts "#{pass} \t\t #{salt} \t\t #{y}"
+      end
+  end
+end
+
+unless ARGV.empty?
+  puts "Usage: vbcrack <infile> <outfile>" if ARGV[1] == nil
+  fname = ARGV[0]
+  file = File.open(fname).read
+  file = file.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
+  file.each_line do |l| 
+    trykeys(l)
+  end
+end
