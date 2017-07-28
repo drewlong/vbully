@@ -1,4 +1,4 @@
-# VBSuite
+# vBully
 ____
 
 This is a simple suite of tools for exploiting vBulletin forums v3.8.5 - 4.2.3, parsing the output, and cracking the passwords. 
