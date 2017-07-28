@@ -1,6 +1,12 @@
 #!/usr/bin/env ruby
 $LOAD_PATH << 'lib'
 
+##################################################
+#            Based on CVE-2016-6195              #
+#    https://www.exploit-db.com/exploits/40751   #
+##################################################
+
+
 require 'mechanize'
 
 def exploit(url)
