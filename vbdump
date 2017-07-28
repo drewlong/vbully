@@ -1,4 +1,5 @@
-#/usr/bin/env ruby
+#!/usr/bin/ruby
+$LOAD_PATH << 'lib'
 
 require 'mechanize'
 
