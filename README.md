@@ -22,6 +22,6 @@ vbully -u http://example.com -p -c -w rockyou.txt -o example
 
 To install: 
 
-    gem install gibberish mechanize
+    gem install gibberish mechanize colorize
 
 Depends on Ruby v2.3 or higher. 
