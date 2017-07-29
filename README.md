@@ -13,7 +13,7 @@ vbully -u http://example.com -p -c -w rockyou.txt -o example
         [1] Enumerate Tables
         [2] Dump User Table
 
--u    URL (can use -s option)
+-u    URL
 -p    Parse results for user:hash:salt combinations
 -c    Crack hashes (must provide -w <wordlist>)
 -w    Specify wordlist (decompressed)
