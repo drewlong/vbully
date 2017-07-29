@@ -1,11 +1,24 @@
 # vBully
 ____
 
-This is a simple suite of tools for exploiting vBulletin forums v3.8.5 - 4.2.3, parsing the output, and cracking the passwords. 
+vBully is an auto-exploiter for the ForumRunner vulnerability (CVE-2016-6195). This work is based on the work of Manish Kishan Tanwar AKA error1046 (https://twitter.com/IndiShell1046). This tool has the expanded ability to parse the results post-SQL-Injection and grab the dumped user table hashes. It then saves the hashes to a file and proceeds to crack the password hashes based on the `md5(md5(password).salt)` formula used by vBulletin.  
 
-- `vbdump` is used for site exploitation, it returns the SQL Injection response (you should pipe into a file)
-- `vbparse`is used to parse the response file for v3 & v4 hashes
-- `vbcrack` is the vBulletin hash cracker, it utilizes the Gibberish ruby gem to parse a wordlist, hash the entries, and crack the hashes.
+```
+ vBully v.1.1.0
+
+Usage:
+vbully -u http://example.com -p -c -w rockyou.txt -o example
+
+-d    Dump Mode (Default: 2)
+        [1] Enumerate Tables
+        [2] Dump User Table
+
+-u    URL (can use -s option)
+-p    Parse results for user:hash:salt combinations
+-c    Crack hashes (must provide -w <wordlist>)
+-w    Specify wordlist (decompressed)
+-o    Write results to file (provide file base name)
+```
 
 To install: 
 
