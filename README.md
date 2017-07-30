@@ -4,7 +4,7 @@ ____
 vBully is an auto-exploiter for the ForumRunner vulnerability (CVE-2016-6195). This work is based on the work of Manish Kishan Tanwar AKA error1046 (https://twitter.com/IndiShell1046). This tool has the expanded ability to parse the results post-SQL-Injection and grab the dumped user table hashes. It then saves the hashes to a file and proceeds to crack (dictionary attack) the password hashes based on the `md5(md5(password).salt)` formula used by vBulletin.  
 
 ```
- vBully v.1.1.0
+vBully v.2.0.0
 
 Usage:
 vbully -u http://example.com/forums -c -w rockyou.txt -o example
