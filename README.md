@@ -1,5 +1,8 @@
-# vBully
 ____
+
+**Disclaimer**: Although vBully makes it laughably easy to hack & crack vBulletin passwords, the intention of this project is to (hopefully) pursuade vBulletin forum admins affected by the ForumRunner exploit to switch to something a little less awful. I take no responsibility for whatever illegal things you may do with this. Have fun :)
+____
+# vBully
 
 vBully is an auto-exploiter for the ForumRunner vulnerability (CVE-2016-6195). This work is based on the work of Manish Kishan Tanwar AKA error1046 (https://twitter.com/IndiShell1046). This tool has the expanded ability to parse the results post-SQL-Injection and grab the dumped user table hashes. It then saves the hashes to a file and proceeds to crack (dictionary attack) the password hashes based on the `md5(md5(password).salt)` formula used by vBulletin.  
 
